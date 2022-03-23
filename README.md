@@ -4,9 +4,9 @@ deepfakes meets Markov chains
 Group Name: textov
 
 Group members: 
-Praveen Kalva spkalva3
-Anushri Mittal anushri6
-Akanksha Kumar kumar65
+Praveen Kalva spkalva3,
+Anushri Mittal anushri6,
+Akanksha Kumar kumar65,
 Arul Viswanathan arulv2
 
 Project intro:
