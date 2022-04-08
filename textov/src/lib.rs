@@ -21,7 +21,7 @@ impl Textov {
     }
     // splits textfile by sentences and stores into data member(sentences)
     pub fn split_sentences(filepath: String) {
-
+        todo!();
     }
     // counts unique phrases from sentences data member
     pub fn count_unique_phrases(self) {
