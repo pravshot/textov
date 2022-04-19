@@ -20,8 +20,19 @@ impl Textov {
         todo!();
     }
     // splits textfile by sentences and stores into data member(sentences)
-    pub fn split_sentences(filepath: String) {
-        todo!();
+    pub fn split_sentences(filepath: String) -> Vec<String> {
+        //let results: HashMap<usize, usize> = runner::run(filepath);
+        let cleaned_contents: String = fs::read_to_string(filepath).expect("Something went wrong reading the file")
+        let sentences: Vec<String> = Vec::new();
+        let curr : String = String::new();
+        for i in 0..cleaned_contents.len() {
+            curr = curr + cleaned_contents[i];
+            if cleaned_contents[i] == "." || cleaned_contents[i] == "!"  cleaned_contents[i] == "?" {
+                sentence.add(curr);
+                curr = String::new();
+            }
+        }
+        return sentences;
     }
     // counts unique phrases from sentences data member
     pub fn count_unique_phrases(self) {
