@@ -22,8 +22,8 @@ impl Textov {
     pub fn new(filepath: String) -> Self {
         let sentences = split_sentences(filepath);
         let (phrase_idx_map, idx_phrase_map, num_unique_phrases) = create_maps(&sentences);
-        let mut markov_matrix = create_markov_matrix(&sentences, &phrase_idx_map, num_unique_phrases);
-        normalize_matrix(&mut markov_matrix);
+        let mut markov_matrix = create_markov_matrix_with_concurrency(&sentences, &phrase_idx_map, num_unique_phrases);
+        normalize_matrix_with_concurrency(&mut markov_matrix);
         Textov {
             num_unique_phrases,
             markov_matrix,
