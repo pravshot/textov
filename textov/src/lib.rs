@@ -1,9 +1,12 @@
 extern crate rand;
+extern crate rayon;
 
 use std::collections::HashMap;
 use std::fs;
+use std::sync::{Arc, Mutex};
 
 use rand::Rng;
+use rayon::prelude::*;
 
 pub struct Textov {
     num_unique_phrases: usize,
@@ -120,6 +123,35 @@ pub fn create_markov_matrix(sentences: &Vec<String>, phrase_idx_map: &HashMap<St
     markov_matrix
 }
 
+// create un-normalized markov matrix using parallelism/concurrency with Arc/Mutex
+pub fn create_markov_matrix_with_concurrency(sentences: &Vec<String>, phrase_idx_map: &HashMap<String, usize>, num_unique_phrases: usize) -> Vec<Vec<f64>> {
+    // 0 is START, 1 is END
+    let markov_matrix = vec![vec![0.0; num_unique_phrases + 2]; num_unique_phrases + 2];
+    let markov_matrix_arc = Arc::new(Mutex::new(markov_matrix));
+    sentences.par_iter().for_each(|sentence| {
+        let markov_matrix_arced = markov_matrix_arc.clone();
+        let mut markov_matrix= markov_matrix_arced.lock().unwrap();
+        let words: Vec<&str> = sentence.split_whitespace().collect();
+        for i in 0..words.len() {
+            // start word 
+            if i == 0 {
+                (*markov_matrix)[0][phrase_idx_map[words[i]]] += 1.0;
+            }
+            // end word
+            if i == words.len() - 1 {
+                (*markov_matrix)[phrase_idx_map[words[i]]][1] += 1.0;
+                (*markov_matrix)[phrase_idx_map[words[i - 1]]][phrase_idx_map[words[i]]] += 1.0;
+            }
+            // middle word
+            if i != 0 && i != words.len() - 1 {
+                (*markov_matrix)[phrase_idx_map[words[i - 1]]][phrase_idx_map[words[i]]] += 1.0;
+            }
+        }
+    });
+    let result = markov_matrix_arc.lock().unwrap();
+    result.clone()
+}
+
 // normalizes matrix by row
 pub fn normalize_matrix(matrix: &mut Vec<Vec<f64>>) {
     for row in matrix.iter_mut() {
@@ -130,6 +162,18 @@ pub fn normalize_matrix(matrix: &mut Vec<Vec<f64>>) {
             }
         }
     }
+}
+
+// normalizes matrix by row using parallelism/concurrency with rayon crate
+pub fn normalize_matrix_with_concurrency(matrix: &mut Vec<Vec<f64>>) {
+    matrix.par_iter_mut().for_each(|row| {
+        let sum: f64 = row.iter().sum();
+        if sum != 0.0 {
+            for i in 0..row.len() {
+                row[i] /= sum;
+            }
+        }
+    });
 }
 
 // make weighted random choice from a vector of probabiliities, returns index of choice
