@@ -18,12 +18,26 @@ pub struct Textov {
 }
 
 impl Textov {
-    // constructor, will fill up all data members with helper functions
+    // constructor using concurrency methods, will fill up all data members with helper functions
     pub fn new(filepath: String) -> Self {
         let sentences = split_sentences(filepath);
         let (phrase_idx_map, idx_phrase_map, num_unique_phrases) = create_maps(&sentences);
         let mut markov_matrix = create_markov_matrix_with_concurrency(&sentences, &phrase_idx_map, num_unique_phrases);
         normalize_matrix_with_concurrency(&mut markov_matrix);
+        Textov {
+            num_unique_phrases,
+            markov_matrix,
+            phrase_idx_map,
+            idx_phrase_map,
+            sentences
+        }
+    }
+    // constructor using single-threaded methods, will fill up all data members with helper functions
+    pub fn new_without_concurrency(filepath: String) -> Self {
+        let sentences = split_sentences(filepath);
+        let (phrase_idx_map, idx_phrase_map, num_unique_phrases) = create_maps(&sentences);
+        let mut markov_matrix = create_markov_matrix(&sentences, &phrase_idx_map, num_unique_phrases);
+        normalize_matrix(&mut markov_matrix);
         Textov {
             num_unique_phrases,
             markov_matrix,
@@ -104,6 +118,9 @@ pub fn create_markov_matrix(sentences: &Vec<String>, phrase_idx_map: &HashMap<St
     let mut markov_matrix = vec![vec![0.0; num_unique_phrases + 2]; num_unique_phrases + 2];
     for sentence in sentences {
         let words: Vec<&str> = sentence.split_whitespace().collect();
+        if words.len() == 1 {
+            continue;
+        }
         for i in 0..words.len() {
             // start word 
             if i == 0 {
@@ -132,19 +149,21 @@ pub fn create_markov_matrix_with_concurrency(sentences: &Vec<String>, phrase_idx
         let markov_matrix_arced = markov_matrix_arc.clone();
         let mut markov_matrix= markov_matrix_arced.lock().unwrap();
         let words: Vec<&str> = sentence.split_whitespace().collect();
-        for i in 0..words.len() {
-            // start word 
-            if i == 0 {
-                (*markov_matrix)[0][phrase_idx_map[words[i]]] += 1.0;
-            }
-            // end word
-            if i == words.len() - 1 {
-                (*markov_matrix)[phrase_idx_map[words[i]]][1] += 1.0;
-                (*markov_matrix)[phrase_idx_map[words[i - 1]]][phrase_idx_map[words[i]]] += 1.0;
-            }
-            // middle word
-            if i != 0 && i != words.len() - 1 {
-                (*markov_matrix)[phrase_idx_map[words[i - 1]]][phrase_idx_map[words[i]]] += 1.0;
+        if words.len() != 1 {
+            for i in 0..words.len() {
+                // start word 
+                if i == 0 {
+                    (*markov_matrix)[0][phrase_idx_map[words[i]]] += 1.0;
+                }
+                // end word
+                if i == words.len() - 1 {
+                    (*markov_matrix)[phrase_idx_map[words[i]]][1] += 1.0;
+                    (*markov_matrix)[phrase_idx_map[words[i - 1]]][phrase_idx_map[words[i]]] += 1.0;
+                }
+                // middle word
+                if i != 0 && i != words.len() - 1 {
+                    (*markov_matrix)[phrase_idx_map[words[i - 1]]][phrase_idx_map[words[i]]] += 1.0;
+                }
             }
         }
     });
