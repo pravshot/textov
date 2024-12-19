@@ -1,6 +1,4 @@
 # textov
-deepfakes meets Markov chains
-
 Group Name: textov
 
 Group members: 
