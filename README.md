@@ -8,7 +8,7 @@ Akanksha Kumar kumar65,
 Arul Viswanathan arulv2
 
 Project intro:
-Our project uses Markov chains to generate sentences from a text dataset. textov will read in user inputted text files and generate uniquely ordered text that resembles the words in the file. Essentially a deepfakes for text. Uses parallelism and sparse matrices for efficient memory and runtime.
+Our project uses Markov chains to generate sentences from a text dataset. textov will read in user inputted text files and generate uniquely ordered text that resembles the words in the file. Uses parallelism and sparse matrices for efficient memory and runtime.
 
 Goals:
 - Create a Markov Chain map off of the words in a text file
